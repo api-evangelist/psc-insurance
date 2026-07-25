@@ -1,0 +1,267 @@
+aid: psc-insurance
+name: PSC Insurance
+review:
+  question: Does PSC Insurance publish a public, self-serve developer portal or API?
+  answer: false
+  date: '2026-07-25'
+  reviewer: API Evangelist
+  homeMarket: Australia
+  tier: broker-intermediary
+findings:
+  summary: |
+    PSC Insurance is an Australian insurance broking intermediary (PSC Insurance
+    Brokers in Australia, PSC Broking in New Zealand) placing commercial and SME
+    risk. It publishes NO public API surface of any kind. Every conventional
+    developer-portal path and subdomain was probed and none resolved to
+    documentation: developer/developers/docs/api subdomains do not resolve in DNS
+    (curl exit 000), and /developers, /api, /developer, /partners and /integrations
+    all return HTTP 404 on the live broking site. No OpenAPI, Swagger, GraphQL,
+    Postman collection, AsyncAPI, event catalog or .proto was found. The public
+    sitemap contains 104 URLs, all of which are marketing, product and blog pages
+    with zero technical documentation.
+
+    The corporate group domain pscinsurancegroup.com.au no longer serves PSC: it
+    returns HTTP 301 to https://www.envest.com.au/ (Netlify-hosted), reflecting the
+    business being folded into The Ardonagh Group's Australian distribution
+    platform. The broking site's own security.txt names communications@envest.com.au,
+    corroborating that ownership operationally rather than editorially.
+
+    The only machine-facing surface confirmed live is an Auth0 custom-domain OpenID
+    Connect identity endpoint at login.pscinsurance.com.au. That is a login wall for
+    a client/broker portal, not a developer portal — requesting its root path
+    redirects to the marketing site. It is recorded here because the auth model is a
+    real, fetchable finding, not because it constitutes an API product.
+
+    This record is deliberately a stub. Australia has the legal machinery for open
+    insurance and no live obligation: the Consumer Data Right that opened banking and
+    energy was designated to extend to general insurance and then deferred and
+    de-prioritized, so no forcing function ever reached brokers. For a
+    broker-intermediary of this shape the honest finding is that integration is
+    partner-gated and mediated through broker platforms and insurer relationships,
+    with nothing exposed publicly.
+  developerPortal:
+    url: ''
+    confirmed: false
+    classification: none
+    note: |
+      No developer portal exists in any of the three categories (self-serve portal,
+      partner/agent login wall, marketing innovation page). The nearest surface is a
+      pure authentication endpoint with no accompanying documentation.
+  acordPosture: no ACORD reference found
+  acordNote: |
+    The public estate was searched for ACORD, AL3, ACORD XML, ACORD certified and
+    NGDS. Zero matches. No IVANS, agency download, Applied Epic or Vertafore AMS360
+    reference either — though those are US agency-management-system seams and are not
+    expected in an Australian broking market, which runs on different broker
+    platforms. Absence of any published standards posture is itself the finding.
+  insuranceVerbs:
+    quote: not exposed
+    bind: not exposed
+    issue: not exposed
+    fnol: not exposed
+    note: |
+      None of the four insurance API verbs is exposed publicly. Claims are lodged
+      through a human-facing web page (https://www.pscinsurance.com.au/claims/,
+      HTTP 200) and broker contact, not an FNOL API.
+  authModel:
+    scheme: OAuth2 / OpenID Connect (Auth0-hosted), gating a client/broker login wall
+    issuer: https://login.pscinsurance.com.au/
+    discoveryStatus: 200
+    tenant: |
+      login.pscinsurance.com.au is an Auth0 custom domain; DNS CNAMEs resolve to
+      heystack-prod-cd-fcwahiliek5k2wnt.edge.tenants.au.auth0.com and
+      heystack-prod.au.auth0.com (Auth0 Australia region).
+    endpoints:
+      authorization: https://login.pscinsurance.com.au/authorize
+      token: https://login.pscinsurance.com.au/oauth/token
+      jwks: https://login.pscinsurance.com.au/.well-known/jwks.json
+    scopesNote: |
+      The scopes advertised (openid, profile, offline_access, email, phone, address
+      and related claims) and the grant types advertised (authorization_code,
+      client_credentials, refresh_token, device_code, token-exchange, jwt-bearer and
+      Auth0-proprietary grants) are Auth0 tenant defaults emitted by the discovery
+      document. They are NOT documented PSC API scopes and must not be read as
+      evidence of a published API. No PSC-specific audience, resource server or scope
+      is documented anywhere public.
+  webhooks:
+    documented: false
+    note: No event catalog, webhook documentation or AsyncAPI definition was found.
+  postman:
+    documented: false
+    note: No public Postman collection or workspace was found.
+  graphql:
+    documented: false
+    note: /graphql returns HTTP 404 on the broking site; no introspectable surface.
+  specsHarvested: 0
+  openapiHarvested: false
+  gated: true
+  transports:
+  - protocol: HTTPS
+    scheme: https
+    baseURL: https://www.pscinsurance.com.au/
+    documented: true
+    note: Marketing and product website only. Sanity-backed CMS; no API documentation.
+  - protocol: OIDC
+    scheme: https
+    baseURL: https://login.pscinsurance.com.au/
+    documented: true
+    note: |
+      Auth0-hosted OpenID Connect discovery, JWKS and OAuth authorization-server
+      metadata all return HTTP 200 anonymously. Authentication boundary for a gated
+      portal; no protected resource is publicly documented behind it.
+  - protocol: REST
+    scheme: https
+    documented: false
+    note: No REST API is documented or discoverable for PSC Insurance.
+  - protocol: GraphQL
+    scheme: https
+    documented: false
+  - protocol: gRPC
+    documented: false
+  - protocol: ACORD/EDI
+    documented: false
+    note: No ACORD AL3, ACORD XML or NGDS transport is referenced publicly.
+probes:
+- url: https://pscinsurancegroup.com.au/
+  status: 301
+  result: Redirects to https://www.envest.com.au/ (HTTP 200, Netlify). Former corporate
+    group domain is retired into the Ardonagh-owned Envest platform.
+  date: '2026-07-25'
+- url: https://www.pscinsurance.com.au/
+  status: 200
+  result: Live PSC Insurance Brokers marketing site. No developer or API navigation.
+  date: '2026-07-25'
+- url: https://developer.pscinsurancegroup.com.au/
+  status: 000
+  result: DNS does not resolve.
+  date: '2026-07-25'
+- url: https://developers.pscinsurancegroup.com.au/
+  status: 000
+  result: DNS does not resolve.
+  date: '2026-07-25'
+- url: https://docs.pscinsurancegroup.com.au/
+  status: 000
+  result: DNS does not resolve.
+  date: '2026-07-25'
+- url: https://api.pscinsurancegroup.com.au/
+  status: 000
+  result: DNS does not resolve.
+  date: '2026-07-25'
+- url: https://developer.pscinsurance.com.au/
+  status: 000
+  result: DNS does not resolve.
+  date: '2026-07-25'
+- url: https://developers.pscinsurance.com.au/
+  status: 000
+  result: DNS does not resolve.
+  date: '2026-07-25'
+- url: https://docs.pscinsurance.com.au/
+  status: 000
+  result: DNS does not resolve.
+  date: '2026-07-25'
+- url: https://api.pscinsurance.com.au/
+  status: 000
+  result: DNS does not resolve.
+  date: '2026-07-25'
+- url: https://www.pscinsurance.com.au/developers
+  status: 404
+  date: '2026-07-25'
+- url: https://www.pscinsurance.com.au/developer
+  status: 404
+  date: '2026-07-25'
+- url: https://www.pscinsurance.com.au/api
+  status: 404
+  date: '2026-07-25'
+- url: https://www.pscinsurance.com.au/partners
+  status: 404
+  date: '2026-07-25'
+- url: https://www.pscinsurance.com.au/integrations
+  status: 404
+  date: '2026-07-25'
+- url: https://www.pscinsurance.com.au/openapi.json
+  status: 404
+  date: '2026-07-25'
+- url: https://www.pscinsurance.com.au/swagger.json
+  status: 404
+  date: '2026-07-25'
+- url: https://www.pscinsurance.com.au/api-docs
+  status: 404
+  date: '2026-07-25'
+- url: https://www.pscinsurance.com.au/graphql
+  status: 404
+  date: '2026-07-25'
+- url: https://www.pscinsurance.com.au/.well-known/openid-configuration
+  status: 404
+  date: '2026-07-25'
+- url: https://www.pscinsurance.com.au/.well-known/oauth-authorization-server
+  status: 404
+  date: '2026-07-25'
+- url: https://www.pscinsurance.com.au/.well-known/security.txt
+  status: 200
+  result: 'Contact: mailto:communications@envest.com.au; Expires 2027-03-30. Confirms
+    Envest/Ardonagh operational ownership.'
+  date: '2026-07-25'
+- url: https://login.pscinsurance.com.au/.well-known/openid-configuration
+  status: 200
+  result: Auth0 OIDC discovery document, issuer https://login.pscinsurance.com.au/.
+  date: '2026-07-25'
+- url: https://login.pscinsurance.com.au/.well-known/oauth-authorization-server
+  status: 200
+  result: Auth0 OAuth authorization-server metadata.
+  date: '2026-07-25'
+- url: https://login.pscinsurance.com.au/.well-known/jwks.json
+  status: 200
+  result: JWKS served.
+  date: '2026-07-25'
+- url: https://login.pscinsurance.com.au/
+  status: 200
+  result: Root path redirects to https://www.pscinsurance.com.au/ — no portal
+    application is served at the host root anonymously.
+  date: '2026-07-25'
+- url: https://www.pscinsurance.com.au/sitemap.xml
+  status: 200
+  result: 104 URLs, entirely marketing/product/blog. No technical documentation paths.
+  date: '2026-07-25'
+- url: https://www.pscinsurance.com.au/claims/
+  status: 200
+  result: Human-facing claims lodgement page. No FNOL API.
+  date: '2026-07-25'
+- url: https://www.pscconnect.com.au/
+  status: 202
+  result: Returns an nginx HTTP 202 with an empty body to non-browser clients (bot
+    challenge). No content could be confirmed, so nothing is claimed about it.
+  date: '2026-07-25'
+- url: https://api.envest.com.au/
+  status: 404
+  result: Host resolves but serves no API.
+  date: '2026-07-25'
+- url: https://developer.envest.com.au/
+  status: 000
+  result: DNS does not resolve.
+  date: '2026-07-25'
+sources:
+- url: https://www.pscinsurance.com.au/
+  type: Website
+  note: PSC Insurance Brokers, Australia and New Zealand. Business lines and offices.
+- url: https://www.pscbroking.co.nz/
+  type: Website
+  note: New Zealand arm, linked from the Australian site.
+- url: https://www.envest.com.au/
+  type: Website
+  note: Destination of the pscinsurancegroup.com.au 301. Envest describes itself as
+    Australia's largest privately owned insurance and financial services distribution
+    group, part of The Ardonagh Group since 2023.
+- url: https://www.pscinsurance.com.au/.well-known/security.txt
+  type: SecurityTxt
+  note: Names communications@envest.com.au as the security contact.
+- url: https://login.pscinsurance.com.au/.well-known/openid-configuration
+  type: OpenIDConnectDiscovery
+  note: Auth0 custom-domain OIDC metadata for the gated portal.
+actions:
+  openapiDirectoryCreated: false
+  apisListed: 0
+  reason: |
+    No real, documented, public API exists for PSC Insurance, so apis[] is empty and
+    the openapi/ directory is omitted entirely rather than populated with anything
+    inferred. Recording the absence accurately is the intended outcome for this
+    sector and this tier.

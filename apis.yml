@@ -1,0 +1,59 @@
+aid: psc-insurance
+url: https://raw.githubusercontent.com/api-evangelist/psc-insurance/refs/heads/main/apis.yml
+name: PSC Insurance
+kind: company
+description: PSC Insurance is an Australian insurance broking and intermediary group
+  operating as PSC Insurance Brokers across every Australian state and territory, with
+  a New Zealand arm trading as PSC Broking. It places commercial and SME risk — business
+  packages, construction and civil contracting, public liability, cyber, professional
+  indemnity, directors and officers, management liability, commercial property and
+  industrial special risks, strata, motor and fleet, agribusiness and livestock, workers
+  compensation, financial lines and trade credit, and medical and allied health cover
+  — advising clients rather than carrying underwriting risk itself. Formerly the ASX-listed
+  PSC Insurance Group, the business now sits inside The Ardonagh Group's Australian
+  distribution platform; its former corporate domain pscinsurancegroup.com.au 301-redirects
+  to envest.com.au, and the broking site's security.txt names an @envest.com.au contact.
+  Its API posture is honestly assessed as none. There is no public developer portal,
+  no self-serve API, no published OpenAPI or Swagger definition, no GraphQL surface,
+  no Postman collection, no webhook or event catalog, and no ACORD, AL3, IVANS or
+  agency-download reference anywhere on its public estate. The only machine-facing
+  surface confirmed live is an Auth0-hosted OpenID Connect identity endpoint at
+  login.pscinsurance.com.au fronting a client/broker login wall — an authentication
+  boundary, not a developer portal. This matches the Australian market seam — the Consumer
+  Data Right that opened banking and energy was designated for general insurance and
+  then deferred, so no forcing function ever reached brokers, and integration here
+  remains partner-gated and broker-platform mediated.
+image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+tags:
+- Insurance
+- Australia
+- Broker
+- Insurance Brokerage
+- Property and Casualty
+- Commercial Insurance
+- Cyber Insurance
+- Intermediary
+- Partner Gated
+- No Public API
+created: '2026-07-25'
+modified: '2026-07-25'
+specificationVersion: '0.19'
+apis: []
+common:
+- type: Website
+  url: https://www.pscinsurance.com.au/
+- type: Website
+  url: https://www.pscbroking.co.nz/
+- type: LinkedIn
+  url: https://www.linkedin.com/company/psc-insurance-brokers/
+- type: Blog
+  url: https://www.pscinsurance.com.au/blog/
+- type: SecurityTxt
+  url: https://www.pscinsurance.com.au/.well-known/security.txt
+- type: OpenIDConnectDiscovery
+  url: https://login.pscinsurance.com.au/.well-known/openid-configuration
+- type: Review
+  url: review.yml
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com

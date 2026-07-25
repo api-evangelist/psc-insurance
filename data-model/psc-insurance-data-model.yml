@@ -1,0 +1,138 @@
+generated: '2026-07-25'
+method: derived
+source: |
+  live GROQ introspection of the Sanity Content Lake project tw8a70my, dataset
+  "production", on 2026-07-25 (no OpenAPI exists to derive from)
+note: |
+  PSC Insurance publishes no API and no schema, so there is no product data model to
+  derive. What can be derived honestly is the CONTENT model of the headless CMS that
+  backs www.pscinsurance.com.au: the Sanity Content Lake dataset answers GROQ
+  queries anonymously, so its document types, field names and reference edges are
+  publicly introspectable. Every type, field and count below was read from the live
+  dataset — nothing is inferred. This is a marketing content graph, not a policy,
+  quote, claim or customer model; none of the four insurance verbs (quote, bind,
+  issue, FNOL) appears anywhere in it.
+surface:
+  vendor: Sanity Content Lake
+  project_id: tw8a70my
+  dataset: production
+  api_version: v2021-10-21
+  query_language: GROQ
+  endpoint: https://tw8a70my.api.sanity.io/v2021-10-21/data/query/production
+  auth: none required for read
+  multi_tenant: true
+  tenants_observed:
+  - PSC
+  - WorkRisk IQ
+  - WorkRiskIQ
+  tenant_note: |
+    Documents carry a "website" discriminator field. The same dataset serves PSC and
+    the WorkRisk IQ property (https://workriskiq.com.au/), so the content graph is
+    shared across two brands.
+entities:
+- name: page
+  count: 84
+  description: A marketing/product page assembled from an ordered list of section blocks.
+  fields: [_id, _type, _createdAt, _updatedAt, _rev, title, subtitle, slug, folder,
+    sections, seoTitle, seoDescription, seoImage, publishStatus, hideNavbar, abTestVariant,
+    website]
+- name: blog
+  count: 86
+  description: An article. Body is Portable Text; the header carries author, blurb, hero image and a category reference.
+  fields: [_id, _type, _createdAt, _updatedAt, _rev, title, slug, blogPostHeader,
+    blogPostBodyContent, ctaSection, textAlign, hideBreadcrumbs, publishStatus, website]
+- name: categories
+  count: 3
+  description: Blog category taxonomy.
+  fields: [_id, _type, category, website]
+- name: authorDocument
+  count: 2
+  description: Author record; the author object carries a headshot image.
+  fields: [_id, _type, author, website]
+- name: locationDocument
+  count: 34
+  description: |
+    A PSC office / branch. The richest entity in the dataset — it is the only one
+    carrying real-world operational data (address, phone, email, geo coordinates).
+  fields: [_id, _type, locationName, slug, state, fullAddress, contactNumber, emailAddress,
+    coordinates, downloadLink, sections, seoTitle, seoDescription, seoKeywords, publishStatus,
+    website]
+- name: teamMemberCategory
+  count: null
+  description: Ordering/grouping taxonomy for team listings.
+  fields: [_id, _type, categoryTitle, categoryDescription, orderRank, website]
+- name: settings
+  count: null
+  description: Site singleton — navbar, footer and banner configuration.
+  fields: [_id, _type, navbar, footer, banner, website]
+- name: redirects
+  count: 1
+  description: Redirect table for the Next.js front end.
+  fields: [_id, _type, redirectsArr]
+- name: sanity.imageAsset
+  count: 819
+  description: Uploaded image binaries and metadata (Sanity system type).
+- name: sanity.fileAsset
+  count: 108
+  description: |
+    Uploaded files (Sanity system type) — this is where the public PDFs live,
+    including the Financial Services Guide served from cdn.sanity.io.
+- name: media.tag
+  count: null
+  description: Media library tag (Sanity plugin system type).
+relationships:
+- from: blog
+  to: categories
+  kind: belongs_to
+  via: blogPostHeader.categories._ref
+  cardinality: one
+- from: blog
+  to: sanity.imageAsset
+  kind: has_one
+  via: blogPostHeader.heroImage.image.asset._ref
+- from: blog
+  to: author
+  kind: has_one
+  via: blogPostHeader.author
+  note: embedded author object, not a reference to authorDocument
+- from: authorDocument
+  to: sanity.imageAsset
+  kind: has_one
+  via: author.headshot
+- from: page
+  to: section
+  kind: has_many
+  via: sections[]
+- from: locationDocument
+  to: section
+  kind: has_many
+  via: sections[]
+- from: page
+  to: sanity.imageAsset
+  kind: has_one
+  via: seoImage
+value_objects:
+  slug: customSlug
+  image: customImage (wraps a Sanity image asset with objectFit / aspectRatio)
+  rich_text: Portable Text block array
+  geo: geopoint (locationDocument.coordinates)
+section_types:
+  used_on: [page, locationDocument]
+  types: [headerSection, headerSimpleSection, twoColSection, twoColContainedSection,
+    textBlockSection, richTextSection, fourCardSection, twoByTwoCardSection, hoverCardSection,
+    gridSection, imageCardGallerySection, carouselDetailedSection, logosSection, taglineSection,
+    breakoutCtaSection, stepsSection, metricsSection, timelineSection, teamSection,
+    mapSection, mediaSection, blogFeedSection, contactFormSection, zohoFormEmbedSection,
+    anchorPoint]
+  note: |
+    contactFormSection and zohoFormEmbedSection are the only lead-capture surfaces in
+    the model; forms are embedded from Zoho, so submissions do not land in this dataset.
+absent:
+  note: |
+    Deliberately recording what is NOT in the model, because for an insurance broker
+    the absence is the finding.
+  entities_not_present: [policy, quote, submission, binder, claim, fnol, client, insured,
+    insurer, certificate, invoice, premium, commission]
+related:
+- conventions/psc-insurance-conventions.yml
+- asyncapi/psc-insurance-content-lake-asyncapi.yml

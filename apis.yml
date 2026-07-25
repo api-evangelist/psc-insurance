@@ -15,11 +15,13 @@ description: PSC Insurance is an Australian insurance broking and intermediary g
   to envest.com.au, and the broking site's security.txt names an @envest.com.au contact.
   Its API posture is honestly assessed as none. There is no public developer portal,
   no self-serve API, no published OpenAPI or Swagger definition, no GraphQL surface,
-  no Postman collection, no webhook or event catalog, and no ACORD, AL3, IVANS or
-  agency-download reference anywhere on its public estate. The only machine-facing
-  surface confirmed live is an Auth0-hosted OpenID Connect identity endpoint at
-  login.pscinsurance.com.au fronting a client/broker login wall — an authentication
-  boundary, not a developer portal. This matches the Australian market seam — the Consumer
+  no Postman collection, no SDK, no webhook catalog, and no ACORD, AL3, IVANS or
+  agency-download reference anywhere on its public estate. Two machine-facing surfaces
+  are confirmed live and neither is documented by PSC — an Auth0-hosted OpenID Connect
+  identity endpoint at login.pscinsurance.com.au fronting a client/broker login wall,
+  and the Sanity Content Lake dataset behind the marketing site, whose GROQ query,
+  document, export and real-time listen endpoints all answer anonymously. Both are
+  vendor infrastructure under PSC tenancy, not developer products. This matches the Australian market seam — the Consumer
   Data Right that opened banking and energy was designated for general insurance and
   then deferred, so no forcing function ever reached brokers, and integration here
   remains partner-gated and broker-platform mediated.
@@ -40,6 +42,10 @@ modified: '2026-07-25'
 specificationVersion: '0.19'
 apis: []
 common:
+- type: VulnerabilityDisclosure
+  url: security/psc-insurance-vulnerability-disclosure.yml
+- type: DomainSecurity
+  url: security/psc-insurance-domain-security.yml
 - type: Website
   url: https://www.pscinsurance.com.au/
 - type: Website
@@ -47,11 +53,39 @@ common:
 - type: LinkedIn
   url: https://www.linkedin.com/company/psc-insurance-brokers/
 - type: Blog
-  url: https://www.pscinsurance.com.au/blog/
+  url: https://www.pscinsurance.com.au/insights/
+- type: Support
+  url: https://www.pscinsurance.com.au/contact-us/
+- type: TermsOfService
+  url: https://www.pscinsurance.com.au/terms-of-use-statement/
+- type: PrivacyPolicy
+  url: https://www.pscinsurance.com.au/privacy-statement/
 - type: SecurityTxt
   url: https://www.pscinsurance.com.au/.well-known/security.txt
+- type: Security
+  url: https://www.pscinsurance.com.au/.well-known/security.txt
+- type: Compliance
+  url: https://www.pscinsurance.com.au/industry-memberships/
 - type: OpenIDConnectDiscovery
   url: https://login.pscinsurance.com.au/.well-known/openid-configuration
+- type: WellKnown
+  url: well-known/psc-insurance-well-known.yml
+- type: Authentication
+  url: authentication/psc-insurance-authentication.yml
+- type: OAuthScopes
+  url: scopes/psc-insurance-scopes.yml
+- type: Conformance
+  url: conformance/psc-insurance-conformance.yml
+- type: Conventions
+  url: conventions/psc-insurance-conventions.yml
+- type: DataModel
+  url: data-model/psc-insurance-data-model.yml
+- type: AsyncAPI
+  url: asyncapi/psc-insurance-content-lake-asyncapi.yml
+- type: Lifecycle
+  url: lifecycle/psc-insurance-lifecycle.yml
+- type: LLMsTxt
+  url: llms/psc-insurance-llms.txt
 - type: Review
   url: review.yml
 maintainers:

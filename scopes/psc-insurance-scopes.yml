@@ -1,0 +1,79 @@
+generated: '2026-07-25'
+method: searched
+source: https://login.pscinsurance.com.au/.well-known/openid-configuration
+docs: null
+issuer: https://login.pscinsurance.com.au/
+caveat: |
+  IMPORTANT — these are NOT documented PSC Insurance API scopes. They are the
+  standard OpenID Connect scopes and Auth0 profile-claim scopes advertised by the
+  tenant discovery document at login.pscinsurance.com.au. PSC publishes no API, no
+  resource server, no audience and no product permission model. This file records
+  the scope surface that is machine-readable and anonymously fetchable, and nothing
+  more. Treat every entry as identity-only.
+schemes:
+- name: PSCIdentity
+  source: well-known/psc-insurance-openid-configuration.json
+  flows:
+  - flow: authorizationCode
+    authorizationUrl: https://login.pscinsurance.com.au/authorize
+    tokenUrl: https://login.pscinsurance.com.au/oauth/token
+  - flow: clientCredentials
+    tokenUrl: https://login.pscinsurance.com.au/oauth/token
+  - flow: deviceCode
+    deviceAuthorizationUrl: https://login.pscinsurance.com.au/oauth/device/code
+    tokenUrl: https://login.pscinsurance.com.au/oauth/token
+scopes:
+- scope: openid
+  description: Request an ID token — the base OpenID Connect scope.
+  kind: oidc-standard
+  flows: [authorizationCode, deviceCode]
+- scope: profile
+  description: Basic profile claims (name, given_name, family_name, nickname, picture).
+  kind: oidc-standard
+  flows: [authorizationCode, deviceCode]
+- scope: email
+  description: Email address claim.
+  kind: oidc-standard
+  flows: [authorizationCode, deviceCode]
+- scope: phone
+  description: Phone number claim.
+  kind: oidc-standard
+  flows: [authorizationCode, deviceCode]
+- scope: address
+  description: Address claim.
+  kind: oidc-standard
+  flows: [authorizationCode, deviceCode]
+- scope: offline_access
+  description: Issue a refresh token so the session can be renewed without re-auth.
+  kind: oidc-standard
+  flows: [authorizationCode, deviceCode]
+- scope: name
+  description: Auth0 granular profile claim — full name.
+  kind: auth0-profile-claim
+- scope: given_name
+  description: Auth0 granular profile claim — given name.
+  kind: auth0-profile-claim
+- scope: family_name
+  description: Auth0 granular profile claim — family name.
+  kind: auth0-profile-claim
+- scope: nickname
+  description: Auth0 granular profile claim — nickname.
+  kind: auth0-profile-claim
+- scope: email_verified
+  description: Auth0 granular profile claim — whether the email address is verified.
+  kind: auth0-profile-claim
+- scope: picture
+  description: Auth0 granular profile claim — profile picture URL.
+  kind: auth0-profile-claim
+- scope: created_at
+  description: Auth0 granular profile claim — account creation timestamp.
+  kind: auth0-profile-claim
+- scope: identities
+  description: Auth0 granular profile claim — linked identity providers.
+  kind: auth0-profile-claim
+product_scopes:
+  documented: false
+  note: |
+    No PSC-specific scope (policy:read, claim:write, quote:create or anything of that
+    shape) is documented or advertised. If broker/client portal APIs exist behind this
+    tenant they are private and their audiences are not published.

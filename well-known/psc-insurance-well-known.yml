@@ -1,0 +1,63 @@
+generated: '2026-07-25'
+method: searched
+source: live probes of every PSC Insurance host on 2026-07-25
+note: |
+  PSC Insurance publishes no developer portal, so the /.well-known/ surface is the
+  only standards-based discovery layer that exists. Two hosts carry documents: the
+  marketing/broking site (RFC 9116 security.txt only) and the Auth0 custom-domain
+  identity host (full OIDC + RFC 8414 metadata plus JWKS). Every path recorded below
+  was fetched anonymously; 404s are recorded as real, expected absences.
+hosts:
+- host: https://www.pscinsurance.com.au
+  role: marketing and broking website (Next.js on Netlify, Sanity-backed CMS)
+  documents:
+  - path: /.well-known/security.txt
+    spec: RFC 9116
+    status: 200
+    file: psc-insurance-security.txt
+  - path: /.well-known/openid-configuration
+    spec: OpenID Connect Discovery 1.0
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    spec: RFC 8414
+    status: 404
+  - path: /.well-known/api-catalog
+    spec: RFC 9727
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+- host: https://login.pscinsurance.com.au
+  role: |
+    Auth0 custom domain (Australia region) fronting a gated client/broker login.
+    An authentication boundary, not a developer portal — no protected resource
+    server, audience or PSC-specific scope is documented publicly.
+  documents:
+  - path: /.well-known/openid-configuration
+    spec: OpenID Connect Discovery 1.0
+    status: 200
+    file: psc-insurance-openid-configuration.json
+  - path: /.well-known/oauth-authorization-server
+    spec: RFC 8414
+    status: 200
+    file: psc-insurance-oauth-authorization-server.json
+    note: byte-for-byte the same key set as the OIDC discovery document
+  - path: /.well-known/jwks.json
+    spec: RFC 7517
+    status: 200
+    file: psc-insurance-jwks.json
+    note: two RS256 signing keys
+  - path: /.well-known/oauth-protected-resource
+    spec: RFC 9728
+    status: 404
+- host: https://www.pscbroking.co.nz
+  role: New Zealand arm (PSC Broking)
+  documents:
+  - path: /.well-known/security.txt
+    status: 202
+    note: |
+      The NZ host answers every request, including nonexistent paths, with an
+      HTTP 202 and an empty body (bot challenge). No document could be confirmed,
+      so nothing is claimed for this host.
+llms_txt:
+- url: https://www.pscinsurance.com.au/llms.txt
+  status: 404

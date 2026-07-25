@@ -1,0 +1,130 @@
+generated: '2026-07-25'
+method: searched
+source: |
+  live /.well-known/ metadata, https://www.pscinsurance.com.au/industry-memberships/
+  and https://www.pscinsurance.com.au/privacy-statement/
+note: |
+  PSC Insurance is a broking intermediary with no API product, so its conformance
+  story splits cleanly in two: a small set of web/identity standards that the
+  infrastructure genuinely implements, and a substantial published financial-services
+  regulatory posture that is the real compliance surface for a firm of this shape.
+  Insurance data standards (ACORD, AL3, NGDS, IVANS) are absent entirely.
+standards:
+- id: oauth2
+  conforms: true
+  evidence: |
+    RFC 6749 authorization server live at https://login.pscinsurance.com.au/ with
+    authorize, token, revoke and device-code endpoints advertised.
+- id: oidc-core
+  conforms: true
+  evidence: OpenID Connect Discovery 1.0 document returns 200 with issuer, jwks_uri, userinfo_endpoint.
+- id: rfc8414-oauth-authorization-server-metadata
+  conforms: true
+  evidence: /.well-known/oauth-authorization-server returns 200.
+- id: rfc7636-pkce
+  conforms: true
+  evidence: 'code_challenge_methods_supported: [S256, plain]'
+- id: rfc9449-dpop
+  conforms: true
+  evidence: 'dpop_signing_alg_values_supported: [ES256]'
+- id: rfc7517-jwks
+  conforms: true
+  evidence: /.well-known/jwks.json returns two RS256 signing keys.
+- id: rfc8628-device-authorization-grant
+  conforms: true
+  evidence: device_authorization_endpoint advertised.
+- id: rfc8693-token-exchange
+  conforms: true
+  evidence: 'grant_types_supported includes urn:ietf:params:oauth:grant-type:token-exchange'
+- id: oidc-backchannel-logout
+  conforms: true
+  evidence: 'backchannel_logout_supported: true'
+- id: ciba-client-initiated-backchannel-authentication
+  conforms: true
+  evidence: backchannel_authentication_endpoint advertised, poll delivery mode.
+- id: rfc9116-security-txt
+  conforms: true
+  evidence: https://www.pscinsurance.com.au/.well-known/security.txt returns 200 with Contact and Expires.
+- id: rfc9728-oauth-protected-resource-metadata
+  conforms: false
+  evidence: /.well-known/oauth-protected-resource returns 404 — no protected resource is advertised.
+- id: rfc9727-api-catalog
+  conforms: false
+  evidence: /.well-known/api-catalog returns 404.
+- id: openapi
+  conforms: false
+  evidence: No OpenAPI or Swagger definition exists on any PSC host.
+- id: asyncapi
+  conforms: false
+  evidence: No AsyncAPI document is published by PSC.
+- id: graphql
+  conforms: false
+  evidence: |
+    /graphql returns 404 on the broking site; the Sanity project has no GraphQL API
+    deployed ("GraphQL schema not found for dataset/tag").
+- id: rfc9457-problem-details
+  conforms: false
+  evidence: No API returns application/problem+json; no error contract is published.
+- id: fapi
+  conforms: false
+  evidence: No FAPI profile, no mTLS, no par endpoint advertised.
+- id: acord
+  conforms: false
+  evidence: No ACORD, ACORD XML, AL3 or NGDS reference anywhere on the public estate.
+- id: ivans-agency-download
+  conforms: false
+  evidence: |
+    No IVANS or agency-download reference. This is a US agency-management-system seam
+    and is not expected in the Australian broking market.
+- id: cdr-consumer-data-right
+  conforms: false
+  evidence: |
+    Australia's Consumer Data Right was designated to extend to general insurance and
+    then deferred, so no open-insurance obligation reaches brokers. Nothing to conform to.
+regulatory:
+  jurisdiction: Australia
+  published_page: https://www.pscinsurance.com.au/industry-memberships/
+  regimes:
+  - id: afsl
+    name: Australian Financial Services Licence (Corporations Act 2001)
+    conforms: true
+    evidence: |
+      Licences named publicly: Professional Services Corporation Pty Ltd (AFSL 305491),
+      PSC Insurance Brokers (Aust) Pty Ltd (AFSL 342385), PSC Insurance Brokers Gold
+      Coast Pty Ltd (AFSL 247417), PSC Medical & General Insurance Brokers Pty Ltd
+      (AFSL 234421), AWIB Pty Ltd (AFSL 234502), Aviso Broking Pty Ltd (AFSL 239041).
+  - id: insurance-brokers-code-of-practice
+    name: Insurance Brokers Code of Practice
+    conforms: true
+    evidence: Subscription stated on the industry memberships page.
+  - id: niba
+    name: National Insurance Brokers Association of Australia
+    conforms: true
+    evidence: Membership stated on the industry memberships page.
+  - id: afca
+    name: Australian Financial Complaints Authority
+    conforms: true
+    evidence: |
+      AFCA membership stated; external dispute resolution route published at
+      https://www.pscinsurance.com.au/complaints/
+  - id: privacy-act-1988-app
+    name: Privacy Act 1988 (Cth) and the Australian Privacy Principles
+    conforms: true
+    evidence: |
+      Named verbatim in https://www.pscinsurance.com.au/privacy-statement/, which also
+      discloses overseas disclosure to service providers in the United Kingdom and the
+      Philippines.
+    gap: |
+      The privacy statement does not reference the Notifiable Data Breaches scheme or
+      any breach-notification commitment.
+  - id: brokerslink
+    name: BrokersLink Global Insurance Alliance
+    conforms: true
+    evidence: Alliance membership stated on the industry memberships page.
+    note: A commercial alliance rather than a regulatory regime; recorded for completeness.
+  security_certifications:
+    published: false
+    note: |
+      No SOC 2, ISO 27001, PCI DSS, HIPAA, FedRAMP or CSA STAR claim appears anywhere
+      on the public estate, and no trust centre exists at trust./security. subdomains
+      or /trust, /security, /compliance paths.

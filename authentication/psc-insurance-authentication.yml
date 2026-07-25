@@ -1,0 +1,115 @@
+generated: '2026-07-25'
+method: searched
+source: https://login.pscinsurance.com.au/.well-known/openid-configuration
+docs: null
+note: |
+  PSC Insurance publishes no API and therefore no API authentication documentation.
+  This profile is derived entirely from machine-readable metadata fetched
+  anonymously from the two machine-facing surfaces that do exist. Neither is a
+  documented PSC developer product: the first is the Auth0 identity boundary in
+  front of a gated client/broker login, the second is the public read side of the
+  Sanity Content Lake that backs the marketing website.
+summary:
+  types:
+  - openIdConnect
+  - oauth2
+  - http
+  api_key_in: []
+  oauth2_flows:
+  - authorizationCode
+  - clientCredentials
+  - deviceCode
+  - refreshToken
+  - tokenExchange
+  anonymous_read_surfaces: 1
+schemes:
+- name: PSCIdentity
+  type: openIdConnect
+  openIdConnectUrl: https://login.pscinsurance.com.au/.well-known/openid-configuration
+  issuer: https://login.pscinsurance.com.au/
+  provider: Auth0 (custom domain, Australia region)
+  sources:
+  - well-known/psc-insurance-openid-configuration.json
+  endpoints:
+    authorization: https://login.pscinsurance.com.au/authorize
+    token: https://login.pscinsurance.com.au/oauth/token
+    userinfo: https://login.pscinsurance.com.au/userinfo
+    jwks: https://login.pscinsurance.com.au/.well-known/jwks.json
+    revocation: https://login.pscinsurance.com.au/oauth/revoke
+    registration: https://login.pscinsurance.com.au/oidc/register
+    device_authorization: https://login.pscinsurance.com.au/oauth/device/code
+    backchannel_authentication: https://login.pscinsurance.com.au/bc-authorize
+    end_session: https://login.pscinsurance.com.au/oidc/logout
+    mfa_challenge: https://login.pscinsurance.com.au/mfa/challenge
+  token_endpoint_auth_methods:
+  - client_secret_basic
+  - client_secret_post
+  - private_key_jwt
+  - none
+  id_token_signing_alg_values:
+  - HS256
+  - RS256
+  - PS256
+  pkce:
+    supported: true
+    code_challenge_methods:
+    - S256
+    - plain
+  dpop:
+    supported: true
+    signing_alg_values:
+    - ES256
+  mfa:
+    supported: true
+    evidence: mfa_challenge_endpoint advertised; MFA grant types advertised
+  backchannel_logout: true
+  grant_types:
+  - authorization_code
+  - client_credentials
+  - refresh_token
+  - password
+  - implicit
+  - urn:ietf:params:oauth:grant-type:device_code
+  - urn:ietf:params:oauth:grant-type:token-exchange
+  - urn:ietf:params:oauth:grant-type:jwt-bearer
+  - http://auth0.com/oauth/grant-type/password-realm
+  - http://auth0.com/oauth/grant-type/passwordless/otp
+  - http://auth0.com/oauth/grant-type/mfa-oob
+  - http://auth0.com/oauth/grant-type/mfa-otp
+  - http://auth0.com/oauth/grant-type/mfa-recovery-code
+  caveat: |
+    Every value above is emitted by the Auth0 tenant discovery document. These are
+    tenant capabilities, not a documented PSC authorization contract. No PSC
+    resource server, audience or product scope is published anywhere. Do not read
+    the advertised grant types as evidence of a machine-to-machine API programme.
+- name: SanityContentLakeAnonymousRead
+  type: none
+  scheme: anonymous
+  sources:
+  - live probe 2026-07-25
+  host: https://tw8a70my.api.sanity.io
+  note: |
+    The Sanity Content Lake project (tw8a70my) dataset "production" that backs
+    www.pscinsurance.com.au answers GROQ query, single-document, dataset-export and
+    real-time listen requests with no credential at all. This is the standard Sanity
+    "public dataset" configuration for a headless marketing site, not a PSC access
+    grant, and it is undocumented by PSC.
+  verified_anonymous:
+  - {path: '/v2021-10-21/data/query/production', status: 200}
+  - {path: '/v2021-10-21/data/doc/production/{documentId}', status: 200}
+  - {path: '/v2021-10-21/data/export/production', status: 200}
+  - {path: '/v2021-10-21/data/listen/production', status: 200}
+- name: SanityContentLakeBearer
+  type: http
+  scheme: bearer
+  sources:
+  - live probe 2026-07-25
+  note: |
+    Write and administrative paths are token-gated: /v2021-10-21/data/mutate/production
+    rejects an anonymous GET with 405 and the project management endpoint
+    /v2021-10-21/projects/tw8a70my returns 401 "A valid session is required for this
+    endpoint". No token is published and none was attempted.
+related:
+- scopes/psc-insurance-scopes.yml
+- well-known/psc-insurance-well-known.yml
+- conformance/psc-insurance-conformance.yml

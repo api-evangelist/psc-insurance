@@ -1,0 +1,58 @@
+generated: '2026-07-25'
+method: searched
+source: |
+  probes of https://www.pscinsurance.com.au, https://login.pscinsurance.com.au and
+  https://tw8a70my.api.sanity.io on 2026-07-25
+note: |
+  Recorded to make the absences explicit and re-checkable. PSC Insurance operates no
+  API programme, so there is no versioning policy, no deprecation policy, no sunset
+  signalling and no published SLA. The one lifecycle fact worth carrying is the
+  corporate one: the group's own domain now redirects into Envest/Ardonagh.
+versioning:
+  scheme: none
+  current: null
+  docs: null
+  surfaces:
+  - surface: identity (login.pscinsurance.com.au)
+    scheme: unversioned
+    note: Auth0 endpoints carry no version segment.
+  - surface: content-lake (tw8a70my.api.sanity.io)
+    scheme: date-in-path
+    current: v2021-10-21
+    note: Vendor versioning consumed by the website; not a PSC-published contract.
+deprecation:
+  policy_url: null
+  policy_published: false
+  sunset_header: false
+  deprecation_header: false
+  note: |
+    No RFC 8594 Sunset or Deprecation header was observed on any probed response and
+    no deprecation policy page exists.
+sla:
+  url: null
+  uptime_target: null
+  published: false
+status_page:
+  url: null
+  published: false
+  probes:
+  - {url: 'https://status.pscinsurance.com.au/', status: 000, result: DNS does not resolve}
+  - {url: 'https://www.pscinsurance.com.au/status', status: 404}
+  note: |
+    The upstream platforms publish their own status pages (Auth0, Sanity, Netlify),
+    but PSC publishes none and points customers at none, so no StatusPage pointer is
+    claimed for this provider.
+changelog:
+  url: null
+  published: false
+  note: No dated API changelog or release-notes surface exists.
+corporate_lifecycle:
+  event: ASX-listed PSC Insurance Group folded into The Ardonagh Group's Australian distribution platform (Envest)
+  evidence:
+  - {url: 'https://pscinsurancegroup.com.au/', status: 301, to: 'https://www.envest.com.au/'}
+  - {source: well-known/psc-insurance-security.txt, detail: 'Contact: mailto:communications@envest.com.au'}
+  implication: |
+    Any future API or partner-integration surface for this business is more likely to
+    appear under Envest/Ardonagh than under the pscinsurance.com.au estate. Re-check
+    envest.com.au on the next round.
+deprecated_operations: []

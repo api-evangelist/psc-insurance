@@ -26,11 +26,28 @@ findings:
     platform. The broking site's own security.txt names communications@envest.com.au,
     corroborating that ownership operationally rather than editorially.
 
-    The only machine-facing surface confirmed live is an Auth0 custom-domain OpenID
+    The first machine-facing surface confirmed live is an Auth0 custom-domain OpenID
     Connect identity endpoint at login.pscinsurance.com.au. That is a login wall for
     a client/broker portal, not a developer portal — requesting its root path
     redirects to the marketing site. It is recorded here because the auth model is a
     real, fetchable finding, not because it constitutes an API product.
+
+    The 2026-07-25 enrichment round found a second machine-facing surface that the
+    first pass missed. www.pscinsurance.com.au is a Next.js front end (Netlify) over
+    a Sanity Content Lake dataset, project tw8a70my, dataset "production", and that
+    dataset is configured for public read. The GROQ query endpoint, the single-document
+    endpoint, the full NDJSON dataset export and the Server-Sent Events mutation
+    stream all return HTTP 200 to an anonymous request; only the mutate path (405 on
+    GET, POST + token required) and the project-management endpoint (401) are gated.
+    Introspecting it live yields the real content model: eleven document types with
+    84 pages, 86 blog articles, 34 office locations, 3 categories, 2 authors, 819
+    image assets and 108 file assets, plus a "website" discriminator showing the same
+    dataset also serves the WorkRisk IQ property. This is standard headless-CMS
+    configuration rather than a deliberate API, and PSC documents it nowhere — but it
+    is genuinely the only queryable, machine-readable data surface the company has,
+    and it contains marketing content only. No policy, quote, claim, client or
+    premium entity exists anywhere in it. Sanity's GraphQL API is NOT deployed for
+    this project, so there is still no GraphQL surface.
 
     This record is deliberately a stub. Australia has the legal machinery for open
     insurance and no live obligation: the Consumer Data Right that opened banking and
@@ -85,13 +102,39 @@ findings:
       is documented anywhere public.
   webhooks:
     documented: false
-    note: No event catalog, webhook documentation or AsyncAPI definition was found.
+    note: |
+      No webhook catalog and no PSC-published AsyncAPI. One real event channel does
+      exist and was verified: the Sanity Content Lake real-time listen stream
+      (Server-Sent Events) accepts anonymous subscriptions and emits a welcome event
+      immediately. Captured as asyncapi/psc-insurance-content-lake-asyncapi.yml —
+      vendor infrastructure, not a PSC event product.
   postman:
     documented: false
     note: No public Postman collection or workspace was found.
   graphql:
     documented: false
-    note: /graphql returns HTTP 404 on the broking site; no introspectable surface.
+    note: |
+      /graphql returns HTTP 404 on the broking site. The Sanity project has no GraphQL
+      API deployed either — POSTing an introspection query to
+      https://tw8a70my.api.sanity.io/v1/graphql/production/default returns HTTP 404
+      "GraphQL schema not found for dataset/tag". No introspectable GraphQL surface.
+  contentApi:
+    vendor: Sanity Content Lake
+    projectId: tw8a70my
+    dataset: production
+    apiVersion: v2021-10-21
+    anonymousRead: true
+    documentedByProvider: false
+    queryLanguage: GROQ
+    note: |
+      Undocumented but publicly readable. Recorded as a real finding, not as a PSC
+      developer product. Content model derived in data-model/psc-insurance-data-model.yml.
+  sdks:
+    documented: false
+    note: |
+      No first-party client library on npm, PyPI or any other registry, and no GitHub
+      organisation (github.com/pscinsurance, /psc-insurance and /PSCInsuranceGroup all
+      return 404). No packages/ artifact is emitted.
   specsHarvested: 0
   openapiHarvested: false
   gated: true
@@ -109,6 +152,21 @@ findings:
       Auth0-hosted OpenID Connect discovery, JWKS and OAuth authorization-server
       metadata all return HTTP 200 anonymously. Authentication boundary for a gated
       portal; no protected resource is publicly documented behind it.
+  - protocol: HTTP/GROQ
+    scheme: https
+    baseURL: https://tw8a70my.api.sanity.io/v2021-10-21/data/query/production
+    documented: false
+    note: |
+      Sanity Content Lake query API backing the marketing site. Anonymous read works;
+      writes and project administration are token-gated. Undocumented by PSC and it
+      carries marketing content only.
+  - protocol: SSE
+    scheme: https
+    baseURL: https://tw8a70my.api.sanity.io/v2021-10-21/data/listen/production
+    documented: false
+    note: |
+      Real-time mutation stream on the same dataset. Anonymous subscription verified.
+      Described in asyncapi/psc-insurance-content-lake-asyncapi.yml.
   - protocol: REST
     scheme: https
     documented: false
@@ -239,6 +297,90 @@ probes:
   status: 000
   result: DNS does not resolve.
   date: '2026-07-25'
+- url: https://tw8a70my.api.sanity.io/v2021-10-21/data/query/production?query=array::unique(*[]._type)
+  status: 200
+  result: |
+    Sanity Content Lake GROQ query endpoint answers anonymously. Returns the eleven
+    document types in the dataset - authorDocument, blog, categories,
+    locationDocument, media.tag, page, redirects, sanity.fileAsset,
+    sanity.imageAsset, settings, teamMemberCategory.
+  date: '2026-07-25'
+- url: https://tw8a70my.api.sanity.io/v2021-10-21/data/doc/production/{documentId}
+  status: 200
+  result: Single-document endpoint answers anonymously.
+  date: '2026-07-25'
+- url: https://tw8a70my.api.sanity.io/v2021-10-21/data/export/production
+  status: 200
+  result: |
+    Full NDJSON dataset export is publicly readable with no credential. Standard
+    Sanity public-dataset behaviour; recorded because it is the widest anonymous data
+    surface the company exposes.
+  date: '2026-07-25'
+- url: https://tw8a70my.api.sanity.io/v2021-10-21/data/listen/production?query=*
+  status: 200
+  result: |
+    Server-Sent Events mutation stream accepts an anonymous subscription and emits
+    'event: welcome' with a listenerName payload immediately.
+  date: '2026-07-25'
+- url: https://tw8a70my.api.sanity.io/v2021-10-21/data/mutate/production
+  status: 405
+  result: Write path rejects anonymous GET; POST plus a token required. Not publicly usable.
+  date: '2026-07-25'
+- url: https://tw8a70my.api.sanity.io/v2021-10-21/projects/tw8a70my
+  status: 401
+  result: 'Project management endpoint gated - "A valid session is required for this endpoint".'
+  date: '2026-07-25'
+- url: https://tw8a70my.api.sanity.io/v1/graphql/production/default
+  status: 404
+  result: 'GraphQL introspection POST returns "GraphQL schema not found for dataset/tag" - no GraphQL API deployed.'
+  date: '2026-07-25'
+- url: https://login.pscinsurance.com.au/.well-known/oauth-protected-resource
+  status: 404
+  result: No RFC 9728 protected-resource metadata - nothing is advertised as a resource server.
+  date: '2026-07-25'
+- url: https://www.pscinsurance.com.au/llms.txt
+  status: 404
+  result: No provider-published llms.txt; one was generated at llms/psc-insurance-llms.txt.
+  date: '2026-07-25'
+- url: https://www.pscinsurance.com.au/.well-known/api-catalog
+  status: 404
+  result: No RFC 9727 API catalog.
+  date: '2026-07-25'
+- url: https://www.pscinsurance.com.au/.well-known/ai-plugin.json
+  status: 404
+  date: '2026-07-25'
+- url: https://www.pscinsurance.com.au/blog/
+  status: 404
+  result: |
+    The blog index lives at /insights/ (HTTP 200), not /blog/. The apis.yml Blog
+    pointer was corrected in this round.
+  date: '2026-07-25'
+- url: https://www.pscinsurance.com.au/insights/
+  status: 200
+  result: Insights index - the real blog landing page.
+  date: '2026-07-25'
+- url: https://www.pscinsurance.com.au/industry-memberships/
+  status: 200
+  result: |
+    Published compliance posture - NIBA, AFCA, Insurance Brokers Code of Practice,
+    BrokersLink, and six named AFSL licences (305491, 342385, 247417, 234421, 234502,
+    239041).
+  date: '2026-07-25'
+- url: https://www.pscinsurance.com.au/privacy-statement/
+  status: 200
+  result: |
+    Names the Privacy Act 1988 (Cth) and the Australian Privacy Principles; discloses
+    overseas processing in the United Kingdom and the Philippines. Does not mention
+    the Notifiable Data Breaches scheme.
+  date: '2026-07-25'
+- url: https://status.pscinsurance.com.au/
+  status: 000
+  result: DNS does not resolve - no status page.
+  date: '2026-07-25'
+- url: https://github.com/pscinsurance
+  status: 404
+  result: No GitHub organisation (also checked /psc-insurance and /PSCInsuranceGroup, both 404).
+  date: '2026-07-25'
 sources:
 - url: https://www.pscinsurance.com.au/
   type: Website
@@ -264,4 +406,46 @@ actions:
     No real, documented, public API exists for PSC Insurance, so apis[] is empty and
     the openapi/ directory is omitted entirely rather than populated with anything
     inferred. Recording the absence accurately is the intended outcome for this
-    sector and this tier.
+    sector and this tier. The two live machine-facing surfaces (Auth0 identity,
+    Sanity Content Lake) are recorded as artifacts and common[] pointers rather than
+    as apis[] entries, because neither is a PSC-published API product and neither has
+    a human-readable documentation URL to carry as humanURL.
+enrichment:
+- date: '2026-07-25'
+  round: '2026-06-20 pipeline contract'
+  artifactsAdded:
+  - well-known/psc-insurance-well-known.yml
+  - well-known/psc-insurance-security.txt
+  - well-known/psc-insurance-openid-configuration.json
+  - well-known/psc-insurance-oauth-authorization-server.json
+  - well-known/psc-insurance-jwks.json
+  - authentication/psc-insurance-authentication.yml
+  - scopes/psc-insurance-scopes.yml
+  - conformance/psc-insurance-conformance.yml
+  - conventions/psc-insurance-conventions.yml
+  - data-model/psc-insurance-data-model.yml
+  - asyncapi/psc-insurance-content-lake-asyncapi.yml
+  - lifecycle/psc-insurance-lifecycle.yml
+  - security/psc-insurance-domain-security.yml
+  - security/psc-insurance-vulnerability-disclosure.yml
+  - llms/psc-insurance-llms.txt
+  skipped:
+    openapi: no OpenAPI or Swagger exists on any host after full contract discovery
+    graphql: no GraphQL surface on the site or in the Sanity project
+    packages: no first-party client library on any registry, no GitHub organisation
+    mcp: no MCP server, and no OpenAPI to derive candidate tools from
+    skills: no OpenAPI to ground agent skills in
+    cli: no first-party CLI
+    sandbox: no sandbox, test credentials or test values published
+    changelog: no dated changelog
+    components: no embeddable UI component library
+    errors: no error reference and no spec to derive problem types from
+    overlays: nothing to overlay
+    grpc: no .proto published
+    trustCenter: no trust centre found at any candidate host or path
+  keyFinding: |
+    The Sanity Content Lake dataset behind www.pscinsurance.com.au is publicly
+    readable and was missed by the first pass. It does not change the API verdict —
+    it is undocumented vendor infrastructure holding marketing content — but it is
+    the only queryable machine-readable data surface the company has, and it carries
+    a real event stream.

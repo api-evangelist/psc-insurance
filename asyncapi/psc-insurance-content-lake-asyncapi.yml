@@ -1,0 +1,182 @@
+asyncapi: 3.0.0
+info:
+  title: PSC Insurance Content Lake — real-time listen stream
+  version: v2021-10-21
+  description: |
+    PSC Insurance publishes no event surface of its own: there is no webhook
+    catalogue, no event reference, no AsyncAPI document and no streaming product on
+    any pscinsurance.com.au host.
+
+    One real, anonymously reachable event channel does exist, and this document
+    describes exactly that and nothing more. The marketing site
+    (www.pscinsurance.com.au) is a Next.js front end over a Sanity Content Lake
+    dataset (project tw8a70my, dataset "production") that is configured for public
+    read. Sanity's `/data/listen/{dataset}` endpoint is a Server-Sent Events stream
+    that pushes a message every time a document matching the subscribed GROQ query
+    is created, updated or deleted — and it accepts an anonymous connection here.
+
+    Provenance discipline for this file:
+      * The server, channel, GROQ subscription parameter and the `welcome` message
+        were VERIFIED live on 2026-07-25 by opening the stream anonymously.
+      * The `mutation` and `channelError` messages are Sanity's publicly documented
+        event types for this endpoint; they were not observed during the probe
+        window (no editor published a document while the socket was open), so their
+        payload fields are marked `x-observed: false`.
+      * Nothing here is a PSC product commitment. This is undocumented vendor
+        infrastructure that happens to be publicly readable.
+  contact:
+    name: PSC Insurance security contact (per RFC 9116 security.txt)
+    email: communications@envest.com.au
+  tags:
+  - name: cms
+  - name: sse
+  - name: undocumented
+  - name: anonymous-read
+externalDocs:
+  description: Sanity listening (vendor documentation for this endpoint shape)
+  url: https://www.sanity.io/docs/listening-to-queries
+defaultContentType: application/json
+servers:
+  contentLake:
+    host: tw8a70my.api.sanity.io
+    protocol: https
+    pathname: /v2021-10-21
+    description: |
+      Sanity Content Lake API, dated API version v2021-10-21. Read paths require no
+      credential; mutate and project-management paths are token-gated (405/401 when
+      called anonymously).
+    security: []
+    tags:
+    - name: vendor
+      description: Sanity.io — third-party infrastructure, not a PSC-operated API host.
+channels:
+  listen:
+    address: /data/listen/production
+    title: Content Lake mutation stream
+    description: |
+      Server-Sent Events stream of mutations to documents matching the subscribed
+      GROQ query. Verified live: an anonymous GET with `Accept: text/event-stream`
+      returns HTTP 200 and immediately emits a `welcome` event, then holds the
+      connection open.
+    servers:
+    - $ref: '#/servers/contentLake'
+    bindings:
+      http:
+        method: GET
+    parameters:
+      query:
+        description: |
+          GROQ query (query string parameter, URL-encoded) selecting the documents to
+          subscribe to. `*` subscribes to every document in the dataset.
+        examples:
+        - '*'
+        - '*[_type=="blog"]'
+        - '*[_type=="locationDocument"]'
+    messages:
+      welcome:
+        $ref: '#/components/messages/welcome'
+      mutation:
+        $ref: '#/components/messages/mutation'
+      channelError:
+        $ref: '#/components/messages/channelError'
+operations:
+  receiveContentEvents:
+    action: receive
+    channel:
+      $ref: '#/channels/listen'
+    summary: Receive content mutation events for the PSC marketing site.
+    messages:
+    - $ref: '#/channels/listen/messages/welcome'
+    - $ref: '#/channels/listen/messages/mutation'
+    - $ref: '#/channels/listen/messages/channelError'
+components:
+  messages:
+    welcome:
+      name: welcome
+      title: Stream established
+      summary: Emitted once, immediately after the stream opens.
+      contentType: application/json
+      x-observed: true
+      x-observed-at: '2026-07-25'
+      payload:
+        $ref: '#/components/schemas/Welcome'
+      examples:
+      - name: observedWelcome
+        summary: Captured verbatim from the live stream on 2026-07-25.
+        payload:
+          listenerName: qHWwIS1Jj9g10dHvtdZgBd
+    mutation:
+      name: mutation
+      title: Document mutated
+      summary: |
+        Emitted when a document matching the subscribed query is created, updated or
+        deleted. Not observed during the probe window; fields below follow Sanity's
+        public documentation for this endpoint.
+      contentType: application/json
+      x-observed: false
+      payload:
+        $ref: '#/components/schemas/Mutation'
+    channelError:
+      name: channelError
+      title: Channel error
+      summary: Emitted when the subscription fails (for example an invalid GROQ query).
+      contentType: application/json
+      x-observed: false
+      payload:
+        $ref: '#/components/schemas/ChannelError'
+  schemas:
+    Welcome:
+      type: object
+      x-observed: true
+      required:
+      - listenerName
+      properties:
+        listenerName:
+          type: string
+          description: Opaque identifier for this listener connection.
+    Mutation:
+      type: object
+      x-observed: false
+      description: |
+        Documented Sanity mutation-event envelope. Property set recorded from vendor
+        documentation, not from an observed payload — treat as indicative.
+      properties:
+        eventId:
+          type: string
+          description: Identifier for this mutation event.
+        documentId:
+          type: string
+          description: The _id of the mutated document.
+        transactionId:
+          type: string
+        transition:
+          type: string
+          enum: [appear, update, disappear]
+          description: Whether the document entered, changed within, or left the query result set.
+        identity:
+          type: string
+          description: Identity that performed the mutation.
+        mutations:
+          type: array
+          description: The mutations applied.
+          items:
+            type: object
+        result:
+          type: object
+          description: The document after mutation (present unless includeResult=false).
+        previousRev:
+          type: string
+        resultRev:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        visibility:
+          type: string
+          enum: [transaction, query]
+    ChannelError:
+      type: object
+      x-observed: false
+      properties:
+        message:
+          type: string

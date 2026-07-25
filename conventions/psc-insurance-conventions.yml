@@ -1,0 +1,103 @@
+generated: '2026-07-25'
+method: derived
+source: |
+  live probes of https://login.pscinsurance.com.au and
+  https://tw8a70my.api.sanity.io/v2021-10-21/... on 2026-07-25
+note: |
+  PSC Insurance publishes no API conventions because it publishes no API. This file
+  records the request/response semantics of the two machine-facing surfaces that
+  were actually reachable, so that anything built against them is built against
+  observed behaviour rather than assumption. Both are third-party platforms (Auth0,
+  Sanity) operating under PSC-owned or PSC-configured tenancy; PSC documents neither.
+surfaces:
+- name: identity
+  host: https://login.pscinsurance.com.au
+  platform: Auth0 (custom domain, Australia region)
+  authentication:
+    style: OAuth 2.0 / OpenID Connect
+    profile: authentication/psc-insurance-authentication.yml
+    client_auth: [client_secret_basic, client_secret_post, private_key_jwt, none]
+    pkce: S256 (and plain)
+    sender_constraining: DPoP (ES256)
+  versioning:
+    scheme: none
+    note: Auth0 endpoints are unversioned; capability changes surface through the discovery document.
+  discovery:
+    openid_configuration: https://login.pscinsurance.com.au/.well-known/openid-configuration
+    oauth_authorization_server: https://login.pscinsurance.com.au/.well-known/oauth-authorization-server
+    jwks: https://login.pscinsurance.com.au/.well-known/jwks.json
+  caching:
+    observed: 'cache-control: public, max-age=15, stale-while-revalidate=15, stale-if-error=86400'
+    note: Discovery document is served through Cloudflare with a short public TTL.
+  errors:
+    envelope: OAuth 2.0 error object ({error, error_description})
+    problem_json: false
+  idempotency:
+    supported: false
+    note: No idempotency-key contract is advertised or documented.
+  pagination:
+    style: none
+  rate_limiting:
+    documented: false
+    note: Auth0 applies tenant rate limits; none are published for this tenant.
+- name: content-lake
+  host: https://tw8a70my.api.sanity.io
+  platform: Sanity Content Lake (project tw8a70my, dataset production)
+  authentication:
+    style: none for read; bearer token for mutate and project administration
+    verified: |
+      GET /v2021-10-21/data/query/production -> 200 anonymously.
+      GET /v2021-10-21/projects/tw8a70my -> 401 "A valid session is required for this endpoint".
+  versioning:
+    scheme: date-in-path
+    current: v2021-10-21
+    note: |
+      The site pins the 2021-10-21 API version in its own requests; Sanity's date
+      versioning is a vendor contract, not a PSC one.
+  query_language:
+    name: GROQ
+    transport: |
+      HTTP GET with a URL-encoded `query` parameter; POST is also accepted for long
+      queries. Response envelope is {query, result, syncTags, ms}.
+    example: https://tw8a70my.api.sanity.io/v2021-10-21/data/query/production?query=*%5B_type%3D%3D%22blog%22%5D%5B0..9%5D
+  pagination:
+    style: groq-slice
+    params: 'range slice on the query itself, e.g. [0..9]'
+    note: |
+      There is no page/offset/cursor parameter. Ordering and windowing are expressed
+      inside the GROQ query (`| order(_createdAt desc) [0..9]`).
+  field_selection:
+    style: groq-projection
+    note: 'The projection block ({title, slug}) is the sparse-fieldset mechanism.'
+  endpoints_verified:
+  - {path: '/v2021-10-21/data/query/{dataset}', method: GET, status: 200, purpose: GROQ query}
+  - {path: '/v2021-10-21/data/doc/{dataset}/{documentId}', method: GET, status: 200, purpose: fetch one document}
+  - {path: '/v2021-10-21/data/export/{dataset}', method: GET, status: 200, purpose: NDJSON dataset export}
+  - {path: '/v2021-10-21/data/listen/{dataset}', method: GET, status: 200, purpose: SSE mutation stream}
+  - {path: '/v2021-10-21/data/mutate/{dataset}', method: GET, status: 405, purpose: 'writes (token-gated, POST only)'}
+  - {path: '/v2021-10-21/projects/{projectId}', method: GET, status: 401, purpose: project administration}
+  events:
+    spec: asyncapi/psc-insurance-content-lake-asyncapi.yml
+    transport: Server-Sent Events
+  errors:
+    envelope: '{statusCode, error, message}'
+    problem_json: false
+    example: '{"statusCode":401,"error":"Unauthorized","message":"A valid session is required for this endpoint"}'
+  idempotency:
+    supported: false
+    note: |
+      Read paths are safe by construction, but no idempotency-key contract is
+      offered for writes and no write path is publicly usable.
+  tracing:
+    request_id_header: none observed
+    note: Responses carry a `syncTags` array and an `ms` timing field instead.
+  rate_limiting:
+    documented: false
+    headers_observed: none
+cross_links:
+  authentication: authentication/psc-insurance-authentication.yml
+  scopes: scopes/psc-insurance-scopes.yml
+  data_model: data-model/psc-insurance-data-model.yml
+  lifecycle: lifecycle/psc-insurance-lifecycle.yml
+  conformance: conformance/psc-insurance-conformance.yml
+  well_known: well-known/psc-insurance-well-known.yml

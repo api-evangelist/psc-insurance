@@ -29,6 +29,17 @@ image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.j
 tags:
 - Insurance
 - Australia
+- Brokers
+- Insurance Brokerage
+- Property and Casualty
+- Commercial Insurance
+- Cyber Insurance
+- Intermediary
+- Partner Gated
+- No Public API
+tags_raw:
+- Insurance
+- Australia
 - Broker
 - Insurance Brokerage
 - Property and Casualty
